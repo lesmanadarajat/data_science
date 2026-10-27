@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Model Prediksi Resiko Stroke</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <!-- Decorative Orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="container">
+    <!-- ============ HEADER ============ -->
+    <header class="header">
+      <div class="logo-badge">🧠</div>
+      <h1>Model Prediksi Resiko Stroke</h1>
+      <p>Deteksi dini risiko stroke dengan teknologi machine learning — akurat, cepat, dan mudah digunakan.</p>
+    </header>
+
+    <!-- ============ MAIN CARD ============ -->
+    <main class="card">
+      <form method="POST" id="predictForm">
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label><span class="icon">👤</span> Jenis Kelamin</label>
+            <select name="gender" required>
+              <option value="Male">Laki-laki</option>
+              <option value="Female">Perempuan</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label><span class="icon">🎂</span> Usia (tahun)</label>
+            <input type="number" step="0.1" min="0" max="120" name="age"
+                   value="{{ request.form.age or 55 }}" required>
+          </div>
+
+          <div class="form-group">
+            <label><span class="icon">💊</span> Hipertensi</label>
+            <select name="hypertension" required>
+              <option value="0" {% if request.form.hypertension == '0' %}selected{% endif %}>Tidak</option>
+              <option value="1" {% if request.form.hypertension == '1' %}selected{% endif %}>Ya</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label><span class="icon">❤️</span> Penyakit Jantung</label>
+            <select name="heart_disease" required>
+              <option value="0" {% if request.form.heart_disease == '0' %}selected{% endif %}>Tidak</option>
+              <option value="1" {% if request.form.heart_disease == '1' %}selected{% endif %}>Ya</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label><span class="icon">💍</span> Status Pernikahan</label>
+            <select name="ever_married" required>
+              <option value="Yes">Sudah Menikah</option>
+              <option value="No">Belum Menikah</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label><span class="icon">💼</span> Jenis Pekerjaan</label>
+            <select name="work_type" required>
+              <option value="Private">Swasta</option>
+              <option value="Self-employed">Wiraswasta</option>
+              <option value="Govt_job">Pemerintahan</option>
+              <option value="children">Anak-anak</option>
+              <option value="Never_worked">Belum Bekerja</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label><span class="icon">🏠</span> Tipe Tempat Tinggal</label>
+            <select name="Residence_type" required>
+              <option value="Urban">Perkotaan</option>
+              <option value="Rural">Pedesaan</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label><span class="icon">🩸</span> Kadar Glukosa (mg/dL)</label>
+            <input type="number" step="0.01" min="50" max="300" name="avg_glucose_level"
+                   value="{{ request.form.avg_glucose_level or 100 }}" required>
+          </div>
+
+          <div class="form-group">
+            <label><span class="icon">⚖️</span> BMI (Indeks Massa Tubuh)</label>
+            <input type="number" step="0.1" min="10" max="70" name="bmi"
+                   value="{{ request.form.bmi or 25 }}" required>
+          </div>
+
+          <div class="form-group">
+            <label><span class="icon">🚬</span> Status Merokok</label>
+            <select name="smoking_status" required>
+              <option value="never smoked">Tidak Pernah Merokok</option>
+              <option value="formerly smoked">Mantan Perokok</option>
+              <option value="smokes">Perokok Aktif</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn-submit" id="submitBtn">
+            <span>🔍 Analisis Risiko Stroke</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- ============ RESULT ============ -->
+      {% if result %}
+        <div class="result-box {{ 'high' if result.prediction == 1 else 'low' }}">
+          <div class="result-header">
+            <div class="result-icon">{{ '⚠️' if result.prediction == 1 else '✅' }}</div>
+            <h2>
+              {% if result.prediction == 1 %}
+                Risiko Stroke Tinggi
+              {% else %}
+                Risiko Stroke Rendah
+              {% endif %}
+            </h2>
+          </div>
+
+          <p class="result-desc">
+            {% if result.prediction == 1 %}
+              Berdasarkan analisis data yang dimasukkan, model mendeteksi adanya indikasi risiko stroke yang signifikan. <strong>Segera konsultasikan dengan dokter</strong> untuk pemeriksaan lebih lanjut.
+            {% else %}
+              Berdasarkan analisis data yang dimasukkan, model tidak mendeteksi adanya indikasi risiko stroke yang signifikan. <strong>Pertahankan gaya hidup sehat Anda!</strong>
+            {% endif %}
+          </p>
+
+          <div class="prob-container">
+            <div class="prob-header">
+              <span>Probabilitas Stroke</span>
+              <span class="prob-value">{{ result.prob_pct }}%</span>
+            </div>
+            <div class="prob-track">
+              <div class="prob-fill" style="width: {{ result.prob_pct }}%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ REKOMENDASI RISIKO TINGGI ============ -->
+        {% if result.prediction == 1 %}
+        <section class="recommendation">
+
+          <div class="rec-header">
+            <div class="rec-header-icon">💡</div>
+            <div>
+              <h3>Langkah untuk Mengurangi Risiko Stroke</h3>
+              <p>Rekomendasi berbasis medis yang bisa Anda mulai hari ini</p>
+            </div>
+          </div>
+
+          <div class="rec-grid">
+
+            <div class="rec-card emergency">
+              <div class="rec-card-header">
+                <div class="rec-card-icon">🚨</div>
+                <h4>Segera Lakukan</h4>
+              </div>
+              <ul>
+                <li><strong>Konsultasi dokter</strong> dalam 1×24 jam untuk pemeriksaan menyeluruh</li>
+                <li><strong>Cek tekanan darah</strong> & kadar gula darah segera</li>
+                <li><strong>Konsultasi obat</strong> — jangan hentikan obat hipertensi/jantung tanpa resep</li>
+                <li><strong>EKG & CT Scan</strong> jika disarankan dokter</li>
+              </ul>
+            </div>
+
+            <div class="rec-card nutrition">
+              <div class="rec-card-header">
+                <div class="rec-card-icon">🥗</div>
+                <h4>Pola Makan Sehat</h4>
+              </div>
+              <ul>
+                <li><strong>Kurangi garam</strong> maksimal 1 sendok teh/hari (5 gram)</li>
+                <li><strong>Diet DASH/Mediterania</strong> — perbanyak sayur, buah, ikan</li>
+                <li><strong>Hindari</strong> gorengan, junk food, daging merah berlebih</li>
+                <li><strong>Kurangi gula</strong> & karbohidrat olahan (nasi putih, roti tawar)</li>
+                <li><strong>Perbanyak serat</strong> — oatmeal, kacang-kacangan, biji-bijian</li>
+              </ul>
+            </div>
+
+            <div class="rec-card exercise">
+              <div class="rec-card-header">
+                <div class="rec-card-icon">🏃</div>
+                <h4>Aktivitas Fisik</h4>
+              </div>
+              <ul>
+                <li><strong>150 menit/minggu</strong> olahraga sedang (30 menit × 5 hari)</li>
+                <li><strong>Jalan cepat, renang, bersepeda</strong> — pilih yang nyaman</li>
+                <li><strong>Hindari</strong> olahraga berat mendadak jika belum terlatih</li>
+                <li><strong>Naik tangga</strong> daripada lift — mulai dari hal kecil</li>
+                <li><strong>Peregangan</strong> 5 menit setiap pagi & sore</li>
+              </ul>
+            </div>
+
+            <div class="rec-card medical">
+              <div class="rec-card-header">
+                <div class="rec-card-icon">🩺</div>
+                <h4>Kontrol Medis Rutin</h4>
+              </div>
+              <ul>
+                <li><strong>Cek tekanan darah</strong> minimal 1×/minggu</li>
+                <li><strong>Cek gula darah & kolesterol</strong> setiap 3 bulan</li>
+                <li><strong>Kelola hipertensi</strong> — target &lt; 130/80 mmHg</li>
+                <li><strong>Kelola diabetes</strong> — target HbA1c &lt; 7%</li>
+                <li><strong>Minum obat teratur</strong> sesuai resep dokter</li>
+              </ul>
+            </div>
+
+            <div class="rec-card lifestyle">
+              <div class="rec-card-header">
+                <div class="rec-card-icon">🌿</div>
+                <h4>Gaya Hidup Sehat</h4>
+              </div>
+              <ul>
+                <li><strong>Tidur 7–8 jam</strong> setiap malam, hindari begadang</li>
+                <li><strong>Kelola stres</strong> — meditasi, yoga, atau hobi</li>
+                <li><strong>Jaga berat badan ideal</strong> — BMI 18.5–24.9</li>
+                <li><strong>Batasi alkohol</strong> & hindari minuman manis berlebih</li>
+                <li><strong>Sosialisasi</strong> dengan keluarga & teman secara rutin</li>
+              </ul>
+            </div>
+
+            <div class="rec-card habit">
+              <div class="rec-card-header">
+                <div class="rec-card-icon">🚭</div>
+                <h4>Hentikan Kebiasaan Buruk</h4>
+              </div>
+              <ul>
+                <li><strong>Berhenti merokok total</strong> — risiko turun 50% dalam 1 tahun</li>
+                <li><strong>Hindari asap rokok</strong> (perokok pasif juga berisiko)</li>
+                <li><strong>Hindari alkohol berlebihan</strong> — maksimal 1 gelas/hari</li>
+                <li><strong>Kurangi konsumsi kafein</strong> berlebih (&gt; 3 cangkir/hari)</li>
+                <li><strong>Hindari stres kronis</strong> — cari bantuan psikolog jika perlu</li>
+              </ul>
+            </div>
+
+          </div>
+
+          <div class="emergency-alert">
+            <div class="alert-icon">🚑</div>
+            <div class="alert-content">
+              <h4>⚠️ Tanda Bahaya Stroke — Segera ke IGD!</h4>
+              <p>
+                Jika Anda atau orang terdekat mengalami <strong>wajah terkulai sebelah</strong>,
+                <strong>lemah pada satu sisi tubuh</strong>, atau <strong>sulit berbicara mendadak</strong> —
+                itu adalah gejala stroke. <strong>Segera hubungi 119</strong> atau
+                <strong>pergi ke IGD terdekat</strong>. Waktu adalah otak! (Golden Period: 4.5 jam)
+              </p>
+            </div>
+          </div>
+
+          <div class="tips-box">
+            <h4>⚡ Tips Cepat Hari Ini</h4>
+            <div class="tips-list">
+              <div class="tip-item"><span class="tip-emoji">💧</span><span>Minum <strong>8 gelas air</strong> per hari</span></div>
+              <div class="tip-item"><span class="tip-emoji">🚶</span><span>Jalan kaki <strong>30 menit</strong> setelah makan</span></div>
+              <div class="tip-item"><span class="tip-emoji">🥗</span><span>Isi <strong>½ piring</strong> dengan sayur & buah</span></div>
+              <div class="tip-item"><span class="tip-emoji">😴</span><span>Tidur sebelum <strong>jam 23.00</strong></span></div>
+              <div class="tip-item"><span class="tip-emoji">🧘</span><span>Meditasi <strong>10 menit</strong> untuk redakan stres</span></div>
+              <div class="tip-item"><span class="tip-emoji">📋</span><span>Catat <strong>tekanan darah</strong> hari ini</span></div>
+            </div>
+          </div>
+
+        </section>
+        {% else %}
+        <!-- ============ INFORMASI SEHAT (RISIKO RENDAH) ============ -->
+        <section class="healthy-info">
+
+          <div class="healthy-header">
+            <div class="healthy-header-icon">💚</div>
+            <div>
+              <h3>Hebat! Tetap Jaga Kesehatan Anda</h3>
+              <p>Konsistensi adalah kunci — jadikan pola hidup sehat sebagai gaya hidup, bukan beban</p>
+            </div>
+          </div>
+
+          <div class="healthy-grid">
+
+            <div class="healthy-card nutrition">
+              <div class="healthy-card-header">
+                <div class="healthy-card-icon">🥗</div>
+                <h4>Pola Makan Seimbang</h4>
+              </div>
+              <ul>
+                <li>Isi piring dengan <strong>½ sayur & buah</strong>, ¼ protein, ¼ karbo</li>
+                <li>Pilih <strong>karbohidrat kompleks</strong> — nasi merah, oat, ubi</li>
+                <li>Batasi <strong>gorengan & makanan olahan</strong></li>
+                <li>Minum <strong>8 gelas air</strong> setiap hari</li>
+              </ul>
+            </div>
+
+            <div class="healthy-card exercise">
+              <div class="healthy-card-header">
+                <div class="healthy-card-icon">🏃</div>
+                <h4>Rutin Bergerak</h4>
+              </div>
+              <ul>
+                <li><strong>30 menit olahraga</strong> × 5 hari/minggu</li>
+                <li>Pilih yang menyenangkan: <strong>jalan, senam, renang</strong></li>
+                <li>Naik tangga daripada lift</li>
+                <li>Berdiri & peregangan setiap <strong>1 jam duduk</strong></li>
+              </ul>
+            </div>
+
+            <div class="healthy-card sleep">
+              <div class="healthy-card-header">
+                <div class="healthy-card-icon">😴</div>
+                <h4>Tidur Berkualitas</h4>
+              </div>
+              <ul>
+                <li>Tidur <strong>7–8 jam</strong> setiap malam</li>
+                <li>Tidur & bangun di <strong>jam yang sama</strong> setiap hari</li>
+                <li>Hindari layar <strong>30 menit sebelum tidur</strong></li>
+                <li>Kamar gelap, tenang, dan sejuk</li>
+              </ul>
+            </div>
+
+            <div class="healthy-card mind">
+              <div class="healthy-card-header">
+                <div class="healthy-card-icon">🧘</div>
+                <h4>Kelola Stres</h4>
+              </div>
+              <ul>
+                <li>Meditasi atau pernapasan dalam <strong>10 menit/hari</strong></li>
+                <li>Luangkan waktu untuk <strong>hobi & keluarga</strong></li>
+                <li>Jangan ragu <strong>curhat</strong> ke orang terpercaya</li>
+                <li>Batasi konsumsi <strong>berita negatif</strong> berlebihan</li>
+              </ul>
+            </div>
+
+            <div class="healthy-card check">
+              <div class="healthy-card-header">
+                <div class="healthy-card-icon">🩺</div>
+                <h4>Cek Kesehatan Rutin</h4>
+              </div>
+              <ul>
+                <li>Cek <strong>tekanan darah</strong> minimal 1×/bulan</li>
+                <li>Cek <strong>gula darah & kolesterol</strong> setiap tahun</li>
+                <li>Jangan lewatkan <strong>medical check-up</strong> tahunan</li>
+                <li>Kenali <strong>riwayat keluarga</strong> untuk deteksi dini</li>
+              </ul>
+            </div>
+
+            <div class="healthy-card avoid">
+              <div class="healthy-card-header">
+                <div class="healthy-card-icon">🚭</div>
+                <h4>Hindari Kebiasaan Buruk</h4>
+              </div>
+              <ul>
+                <li>Jangan mulai merokok — <strong>pencegahan terbaik</strong></li>
+                <li>Batasi <strong>alkohol</strong> & minuman manis</li>
+                <li>Kurangi <strong>kafein berlebih</strong> (&gt; 3 cangkir/hari)</li>
+                <li>Hindari <strong>makan larut malam</strong></li>
+              </ul>
+            </div>
+
+          </div>
+
+          <!-- HEALTHY ALERT -->
+          <div class="healthy-alert">
+            <div class="alert-icon">🌟</div>
+            <div class="alert-content">
+              <h4>Ingat Ya! Pencegahan Lebih Baik dari Pengobatan</h4>
+              <p>
+                Hasil prediksi ini menunjukkan risiko Anda <strong>saat ini</strong> rendah.
+                Tetap <strong>konsisten</strong> menjalani pola hidup sehat — karena
+                <strong>80% kasus stroke dapat dicegah</strong> dengan gaya hidup yang tepat.
+                Kesehatan Anda adalah investasi terbaik untuk masa depan! 💚
+              </p>
+            </div>
+          </div>
+
+          <!-- HEALTHY TIPS -->
+          <div class="healthy-tips">
+            <h4>⚡ Mulai Kebiasaan Baik Hari Ini</h4>
+            <div class="tips-list">
+              <div class="tip-item"><span class="tip-emoji">🌅</span><span>Bangun pagi & <strong>berjemur 10 menit</strong></span></div>
+              <div class="tip-item"><span class="tip-emoji">🍎</span><span>Makan <strong>1 buah</strong> setiap hari</span></div>
+              <div class="tip-item"><span class="tip-emoji">🚶</span><span>Jalan santai <strong>15 menit</strong> setelah makan</span></div>
+              <div class="tip-item"><span class="tip-emoji">💧</span><span>Minum air sebelum merasa haus</span></div>
+              <div class="tip-item"><span class="tip-emoji">😊</span><span>Senyum & bersyukur setiap hari</span></div>
+              <div class="tip-item"><span class="tip-emoji">📵</span><span>Kurangi <strong>screen time</strong> sebelum tidur</span></div>
+            </div>
+          </div>
+
+        </section>
+        {% endif %}
+      {% endif %}
+
+      <!-- ============ DISCLAIMER ============ -->
+      <div class="disclaimer">
+        <span class="icon">ℹ️</span>
+        <span><strong>Disclaimer:</strong> Hasil prediksi ini bersifat edukatif dan bukan diagnosis medis. Selalu konsultasikan kondisi kesehatan Anda dengan dokter profesional.</span>
+      </div>
+    </main>
+
+    <!-- ============ FOOTER ============ -->
+    <footer class="footer">
+      Dibuat dengan <span class="heart">♥</span> menggunakan Machine Learning &nbsp;•&nbsp; © 2025 Lesmana
+    </footer>
+  </div>
+
+  <script>
+    // Loading state saat submit
+    document.getElementById('predictForm').addEventListener('submit', function() {
+      const btn = document.getElementById('submitBtn');
+      btn.classList.add('loading');
+      btn.querySelector('span').textContent = ' Menganalisis...';
+    });
+
+    // Smooth scroll ke hasil setelah submit
+    {% if result %}
+    window.addEventListener('load', function() {
+      const resultBox = document.querySelector('.result-box');
+      if (resultBox) {
+        setTimeout(function() {
+          resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
+      }
+    });
+    {% endif %}
+  </script>
+</body>
+</html>
