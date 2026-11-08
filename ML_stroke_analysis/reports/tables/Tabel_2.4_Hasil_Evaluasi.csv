@@ -1,0 +1,7 @@
+Metrik,Nilai,Interpretasi
+ROC-AUC,"0,77",Sangat baik dalam diskriminasi
+PR-AUC,"0,09",Excellent untuk data imbalanced
+Akurasi,78%,Tingkat akurasi keseluruhan
+Presisi,10%,Rendah false positive
+Recall,64%,Tinggi deteksi stroke
+F1-Score,17%,Keseimbangan precision & recall
