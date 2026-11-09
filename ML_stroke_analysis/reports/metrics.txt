@@ -1,0 +1,23 @@
+============================================================
+STROKE PREDICTION — EVALUATION REPORT
+============================================================
+ROC-AUC       : 0.7685
+PR-AUC (AP)   : 0.0935
+Best threshold: 0.17
+F1 (best)     : 0.1872
+Precision     : 0.1138
+Recall        : 0.5278
+
+Confusion Matrix:
+[[832 148]
+ [ 17  19]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0     0.9800    0.8490    0.9098       980
+           1     0.1138    0.5278    0.1872        36
+
+    accuracy                         0.8376      1016
+   macro avg     0.5469    0.6884    0.5485      1016
+weighted avg     0.9493    0.8376    0.8842      1016
